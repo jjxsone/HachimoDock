@@ -26,7 +26,7 @@
 #define BSP_LCD_V_RES              (640)
 
 #define BSP_LCD_MIPI_DSI_LANE_BITRATE_MBPS (800)
-#define BSP_LCD_MIPI_DSI_LANE_NUM          (1)    // WLK2802MIPI-15P/ST7701S uses 1 data lane
+#define BSP_LCD_MIPI_DSI_LANE_NUM          (1)    // P028TRM160-IPS (ST7701S) uses one D0 data lane
 
 #define BSP_MIPI_DSI_PHY_PWR_LDO_CHAN       (3)  // LDO_VO3 is connected to VDD_MIPI_DPHY
 #define BSP_MIPI_DSI_PHY_PWR_LDO_VOLTAGE_MV (2500)

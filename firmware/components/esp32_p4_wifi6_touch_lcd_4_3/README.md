@@ -1,8 +1,16 @@
 # ESP32-P4 WLK2802 Display BSP
 
-This local Waveshare BSP adaptation drives the 480x640 WLK2802/ST7701S panel
-over one 800Mbps MIPI DSI data lane. The firmware renders a 640x480 logical
-framebuffer and rotates it onto the portrait panel.
+This local Waveshare BSP adaptation drives the 480x640 P028TRM160-IPS
+(ST7701S, 20-pin FPC, one D0 data lane) over one 800Mbps MIPI DSI data lane.
+The firmware renders a 640x480 logical framebuffer and rotates it onto the
+portrait panel. The panel module has no touch controller (FPC pins 15-19 are
+NC), so touch stays unavailable and buttons remain the only input.
+
+`vendor_specific_init_default[]` is copied byte-for-byte from the panel
+supplier's "ST7701S MIPI 1Lane" script. The GIP/power registers (C1/C2,
+E1..EF) are panel-specific; substituting another module's table leaves the
+gate driver off (backlight lit, black image) even though the DSI link reports
+ESP_OK. Re-check the table whenever the panel vendor changes.
 
 DSI PHY clock selection is left to the SDK (`phy_clk_src = 0`) so each
 chip family uses its supported PLL reference. The old explicit PHY default
