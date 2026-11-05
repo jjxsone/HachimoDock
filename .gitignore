@@ -41,3 +41,16 @@ firmware/sdkconfig.*
 !firmware/sdkconfig.v3.defaults
 pc/public/terrier-clips/p4-ready/*
 !pc/public/terrier-clips/p4-ready/v9-640x480-15fps-225f-h264-crf27/
+
+# Local Vite dependency cache
+.vite/
+
+# Reproducible configurations referenced by source and SDK checks.
+!firmware/sdkconfig.esp32_p4_program_public_candidate
+!firmware/sdkconfig.esp32_p4_program_public_candidate_v3
+!firmware/sdkconfig.esp32_p4_main_frame_parent
+!firmware/sdkconfig.esp32_p4_framework_parent
+!firmware/sdkconfig.esp32_p4_capability_parent
+
+!firmware/sdkconfig.esp32_p4_evboard_v3
+!firmware/sdkconfig.esp32_p4_large_reply_parent
