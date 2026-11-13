@@ -118,8 +118,31 @@ pub(crate) fn client(timeout: Duration) -> Result<reqwest::blocking::Client, Str
         .build()
         .map_err(|_| "DSH HTTP client unavailable".into())
 }
+pub(crate) fn get(cap: &Capability, path: &str) -> Result<Value, String> {
+    if !["/sessions"].contains(&path) {
+        return Err("invalid DSH operation".into());
+    }
+    let response = client(Duration::from_secs(3))?
+        .get(format!("{}{path}", cap.base_url))
+        .bearer_auth(&cap.token)
+        .send()
+        .map_err(|_| "DSH query failed".to_string())?;
+    let status = response.status();
+    let mut raw = String::new();
+    response
+        .take(65537)
+        .read_to_string(&mut raw)
+        .map_err(|_| "DSH receipt unavailable")?;
+    if !status.is_success() {
+        return Err(format!("DSH query rejected (HTTP {})", status.as_u16()));
+    }
+    serde_json::from_str(&raw).map_err(|_| "invalid DSH receipt".into())
+}
+
 pub(crate) fn post(cap: &Capability, path: &str, body: &Value) -> Result<Value, String> {
     if ![
+        "/voice/status",
+        "/pair/ticket",
         "/voice/begin",
         "/voice/draft",
         "/voice/submit",
@@ -143,15 +166,22 @@ pub(crate) fn post(cap: &Capability, path: &str, body: &Value) -> Result<Value, 
         .take(65537)
         .read_to_string(&mut raw)
         .map_err(|_| "DSH receipt unavailable")?;
-    if raw.len() > 65536 || !status.is_success() {
-        return Err(format!(
-            "DSH request rejected or unknown (HTTP {})",
-            status.as_u16()
-        ));
-    }
+    if raw.len() > 65536 { return Err("DSH receipt too large".into()); }
     let result: Value = serde_json::from_str(&raw).map_err(|_| "invalid DSH receipt")?;
-    if result["ok"] != true {
-        return Err("DSH request not acknowledged".into());
+    if !status.is_success() || result["ok"] != true {
+        // Return only protocol error codes; never response text/session/token.
+        let code = match result["error"].as_str().unwrap_or("") {
+            "composer-unavailable" => "composer-unavailable",
+            "question-pending" => "question-pending",
+            "exact-pair-target-required" => "exact-pair-target-required",
+            "forbidden-origin" => "forbidden-origin",
+            "delivery-unknown" => "delivery-unknown",
+            "stale-lease" => "stale-lease",
+            "unpaired" => "unpaired",
+            "forbidden" => "forbidden",
+            _ => "request-rejected",
+        };
+        return Err(format!("DSH {code} (HTTP {})", status.as_u16()));
     }
     Ok(result)
 }
