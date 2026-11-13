@@ -106,6 +106,7 @@ static void touch_task(void *arg) {
     esp_err_t err = ESP_OK;
     bool pressed = false;
     bool contact_ambiguous = false;
+    bool was_down = pointer.down;
     int ui_x = decoder.current_x;
     int ui_y = decoder.current_y;
     if (g_ft6336 || g_cst826) {
@@ -119,7 +120,7 @@ static void touch_task(void *arg) {
           contact_ambiguous = pointer.down && track_id != frame.track_id;
           track_id = frame.track_id;
           if (g_cst826) pet_p4_touch_cst826_to_ui(frame.x, frame.y, &ui_x, &ui_y);
-          else pet_p4_touch_panel_to_ui(frame.x, frame.y, &ui_x, &ui_y);
+          else pet_p4_touch_ft6336_to_ui(frame.x, frame.y, &ui_x, &ui_y);
           atomic_store(&g_panel_x, frame.x); atomic_store(&g_panel_y, frame.y);
         }
       }
@@ -158,6 +159,12 @@ static void touch_task(void *arg) {
     if (pressed) {
       atomic_fetch_add(&g_contacts, 1);
       atomic_store(&g_ui_x, ui_x); atomic_store(&g_ui_y, ui_y);
+      if (!was_down) {
+        /* Calibration aid: raw controller sample plus the mapped UI point. */
+        ESP_LOGI(TAG, "%s down panel=(%d,%d) ui=(%d,%d)",
+                 pet_p4_touch_controller(),
+                 atomic_load(&g_panel_x), atomic_load(&g_panel_y), ui_x, ui_y);
+      }
     }
     touch_sample_t sample = {0};
     uint64_t now = monotonic_ms();

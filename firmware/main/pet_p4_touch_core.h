@@ -77,6 +77,8 @@ bool pet_p4_touch_decoder_update(
   pet_p4_touch_event_t *event
 );
 void pet_p4_touch_panel_to_ui(int panel_x, int panel_y, int *ui_x, int *ui_y);
+/* FT6336U cover reports a 240x320 grid rotated 180 degrees versus the LCD. */
+void pet_p4_touch_ft6336_to_ui(int raw_x, int raw_y, int *ui_x, int *ui_y);
 /* Installed CST826 panel's sensor axes are 180 degrees from LCD native axes. */
 void pet_p4_touch_cst826_to_ui(int panel_x, int panel_y, int *ui_x, int *ui_y);
 const char *pet_p4_touch_gesture_name(pet_p4_touch_gesture_t gesture);

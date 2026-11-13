@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "pet_p4_touch_core.h"
+#include "pet_p4_touch_map.h"
 #include "pet_p4_slice_core.h"
 
 static void decoder_tests(void) {
@@ -42,7 +43,8 @@ static void decoder_tests(void) {
   assert(pet_p4_touch_decoder_update(&d, true, 50, 50, 701, &g));
   assert(g.gesture == PET_P4_TOUCH_LONG_PRESS);
   assert(!pet_p4_touch_decoder_update(&d, false, 50, 50, 702, &g));
-  int x,y; pet_p4_touch_panel_to_ui(0,0,&x,&y); assert(x==0 && y==479);
+  int x,y;
+  pet_p4_touch_panel_to_ui(0,0,&x,&y); assert(x==0 && y==479);
   pet_p4_touch_panel_to_ui(479,639,&x,&y); assert(x==639 && y==0);
   pet_p4_touch_cst826_to_ui(0,639,&x,&y); assert(x==0 && y==0);
   pet_p4_touch_cst826_to_ui(479,639,&x,&y); assert(x==0 && y==479);
@@ -51,6 +53,11 @@ static void decoder_tests(void) {
   /* Left-edge top-to-bottom stroke stays on the left and moves downward. */
   pet_p4_touch_cst826_to_ui(40,600,&x,&y); assert(x==39 && y==40);
   pet_p4_touch_cst826_to_ui(400,600,&x,&y); assert(x==39 && y==400);
+  /* FT6336U cover: 240x320 raw grid, axes perpendicular to the 640x480 UI. */
+  pet_p4_touch_ft6336_to_ui(0,0,&x,&y); assert(x==0 && y==479);
+  pet_p4_touch_ft6336_to_ui(239,319,&x,&y); assert(x==639 && y==0);
+  pet_p4_touch_ft6336_to_ui(234,8,&x,&y); assert(x==16 && y==11);
+  pet_p4_touch_ft6336_to_ui(120,160,&x,&y); assert(x==320 && y==239);
   pet_p4_pointer_decoder_t p={0}; pet_p4_pointer_event_t e;
   assert(pet_p4_pointer_update(&p,true,true,100,200,10,&e) && e.kind==PET_P4_POINTER_DOWN);
   assert(pet_p4_pointer_update(&p,true,true,100,200,25,&e) && e.kind==PET_P4_POINTER_MOVE);

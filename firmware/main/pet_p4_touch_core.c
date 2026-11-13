@@ -1,4 +1,5 @@
 #include "pet_p4_touch_core.h"
+#include "pet_p4_touch_map.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -112,6 +113,17 @@ void pet_p4_touch_panel_to_ui(int panel_x, int panel_y, int *ui_x, int *ui_y) {
   panel_y = clamp_int(panel_y, 0, PET_P4_PANEL_HEIGHT - 1);
   if (ui_x) *ui_x = panel_y;
   if (ui_y) *ui_y = PET_P4_PANEL_WIDTH - 1 - panel_x;
+}
+
+/* FT6336U cover: a 240x320 grid whose axes are perpendicular to the UI. */
+void pet_p4_touch_ft6336_to_ui(int raw_x, int raw_y, int *ui_x, int *ui_y) {
+  int x = clamp_int(raw_x, 0, PET_P4_FT6336_RAW_WIDTH - 1);
+  int y = clamp_int(raw_y, 0, PET_P4_FT6336_RAW_HEIGHT - 1);
+  int ux = y * (PET_P4_UI_WIDTH - 1) / (PET_P4_FT6336_RAW_HEIGHT - 1);
+  int uy = (PET_P4_UI_HEIGHT - 1)
+           - x * (PET_P4_UI_HEIGHT - 1) / (PET_P4_FT6336_RAW_WIDTH - 1);
+  if (ui_x) *ui_x = ux;
+  if (ui_y) *ui_y = uy;
 }
 
 const char *pet_p4_touch_gesture_name(pet_p4_touch_gesture_t gesture) {
